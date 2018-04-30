@@ -4,6 +4,7 @@ OBJ=/tmp/3Mh59ZFX.elf
 HEX=/tmp/3Mh59ZFX_OUT.hex
 EEPROM=/tmp/3Mh59ZFX_EEPROM.hex
 LFUSE=/tmp/3Mh59ZFX_LFUSE.txt
+HFUSE=/tmp/3Mh59ZFX_HFUSE.txt
 all:
 	avr-gcc -Wall -std=gnu99 -mmcu=$(MMCU) -Os $(CC) -L. -o $(OBJ)
 	avr-objcopy -j .text -j .data -O ihex $(OBJ) $(HEX)
@@ -12,6 +13,7 @@ all:
 	cp $(HEX) /tmp/
 upload:
 	avrdude -p $(MMCU) -c usbasp -U flash:w:$(HEX) -U eeprom:w:$(EEPROM)
-lfuse_read:
+fuse_read:
 	avrdude -p $(MMCU) -c usbasp -U lfuse:r:$(LFUSE):h
-	cat $(LFUSE)
+	avrdude -p $(MMCU) -c usbasp -U hfuse:r:$(HFUSE):h
+	@echo "Low fuse: `cat $(LFUSE)`.\nHigh fuse: `cat $(HFUSE)`."
