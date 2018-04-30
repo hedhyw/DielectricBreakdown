@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dielectric Breakdown chart</title>
+  <meta charset="utf-8">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+  <script type="text/javascript">
+    function setStatus(text) {
+      document.getElementById("status").textContent = text;
+    }
+    window.addEventListener("load", function(evt) {
+      var ctx = document.getElementById("myChart").getContext('2d');
+      dynamicXData = [];
+      dynamicYData = [];
+      let time = 0;
+      var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dynamicXData,
+            datasets: [{
+                data: dynamicYData,
+                backgroundColor: [
+                  'rgba(230, 230, 230, 0.2)'
+                ],
+                borderColor: [
+                  'rgba(54, 162, 235, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+          legend: {
+            display: false
+          },
+          tooltips: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return `U(${tooltipItem.xLabel})=${tooltipItem.yLabel}, V`;
+              }
+            }
+          },
+          scales: {
+            xAxes: [{
+              time: {
+                unit: 'seconds'
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Time, seconds.'
+              }
+            }],
+            yAxes: [{
+              ticks: {
+                stepSize: 10,
+                beginAtZero:true
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Voltage, Volts.'
+              }
+            }]
+          }
+        }
+      });
+      var ws = new WebSocket("{{.}}");
+      if (!ws) return false;
+      ws.onopen = function(evt) {
+        setStatus("connected");
+      }
+      ws.onclose = function(evt) {
+        setStatus("connection closed");
+        ws = null;
+      }
+      ws.onmessage = function(evt) {
+        dynamicXData.push(time);
+        dynamicYData.push(parseInt(evt.data));
+        myChart.update();
+        document.getElementById("voltage").textContent = evt.data;
+      }
+      setInterval(() => {time += 1}, 1000);
+      ws.onerror = function(evt) {
+        setStatus(`connection fail "${evt.data}"`);
+      }
+    });
+  </script>
+</head>
+<body>
+  <p>Status: <span id="status"></span>. Voltage: <span id="voltage"></span>, V.</p>
+  <canvas id="myChart"></canvas>
+  <p>Department of Semiconductor Electronics and Nanoelectronics, Voronezh State Technical University, 2018.</p>
+</body>
+</html>
