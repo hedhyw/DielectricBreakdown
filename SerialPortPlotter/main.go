@@ -19,6 +19,7 @@ func main() {
 	host := flag.String("h", defHost, "host to serve on")
 	addr := fmt.Sprint(*host, ":", *port)
 	log.Print(addr)
+    flag.Parse()
 
 	var syn = &sync.Mutex{}
 	var data = make([]uint16, 0)
